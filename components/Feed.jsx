@@ -20,15 +20,14 @@ const Feed = () => {
   const [posts, setposts] = useState([]);
   const [searchResults, setsearchResults] = useState([]);
 
+  const fetchPosts = async () => {
+    const response = await fetch("/api/prompt");
+    const data = await response.json();
+    setposts(data);
+  };
   useEffect(() => {
-    const fetchPosts = async () => {
-      const response = await fetch("/api/prompt");
-      const data = await response.json();
-      setposts(data);
-    };
     fetchPosts();
   }, []);
-
   const filterPosts = (searchText) => {
     const regex = new RegExp(searchText, "i");
     return posts.filter(
