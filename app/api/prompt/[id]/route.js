@@ -17,6 +17,7 @@ export const GET = async (req, { params }) => {
   }
 };
 
+//for PATCH request
 export const PATCH = async (req, { params }) => {
   const { prompt, tag } = await req.json();
   try {
@@ -34,4 +35,19 @@ export const PATCH = async (req, { params }) => {
   } catch (error) {
     return new Response("Failed to update prompt", { status: 500 });
   }
+};
+
+//for DELETE request
+
+export const DELETE = async (req, { params }) => {
+  try {
+    await connectToDb();
+
+    await Prompt.findByIdAndRemove(params.id);
+
+    return new Response("Prompt deleted successfully", { status: 200 });
+  } catch (error) {
+    return new Response("Failed to delete the prompt", { status: 500 });
+  }
+  y;
 };
