@@ -1,5 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useState, useEffect } from "react";
+
 import PromptCard from "./PromptCard";
 
 const PromptCardList = ({ data, handleTagClick }) => {
@@ -15,40 +17,54 @@ const PromptCardList = ({ data, handleTagClick }) => {
     </div>
   );
 };
+
 const Feed = () => {
-  const [searchText, setsearchText] = useState("");
-  const [posts, setposts] = useState([]);
-  const [searchResults, setsearchResults] = useState([]);
+  const [allPosts, setAllPosts] = useState([]);
+
+  // Search states
+  const [searchText, setSearchText] = useState("");
+  const [searchTimeout, setSearchTimeout] = useState(null);
+  const [searchedResults, setSearchedResults] = useState([]);
 
   const fetchPosts = async () => {
-    const response = await fetch("/api/prompt", {
-      cache: "no-store",
-    }); //need to be refactored
+    const response = await fetch("/api/prompt");
     const data = await response.json();
-    setposts(data);
+
+    setAllPosts(data);
   };
+
   useEffect(() => {
     fetchPosts();
   }, []);
-  const filterPosts = (searchText) => {
-    const regex = new RegExp(searchText, "i");
-    return posts.filter(
-      (post) =>
-        regex.test(post.creator.username) ||
-        regex.test(post.prompt) ||
-        regex.test(post.tag)
+
+  const filterPrompts = (searchtext) => {
+    const regex = new RegExp(searchtext, "i"); // 'i' flag for case-insensitive search
+    return allPosts.filter(
+      (item) =>
+        regex.test(item.creator.username) ||
+        regex.test(item.tag) ||
+        regex.test(item.prompt)
     );
   };
+
   const handleSearchChange = (e) => {
-    setsearchText(e.target.value);
-    const searchResult = filterPosts(e.target.value);
-    setsearchResults(searchResult);
+    clearTimeout(searchTimeout);
+    setSearchText(e.target.value);
+
+    // debounce method
+    setSearchTimeout(
+      setTimeout(() => {
+        const searchResult = filterPrompts(e.target.value);
+        setSearchedResults(searchResult);
+      }, 500)
+    );
   };
 
-  const handleTagClick = (tag) => {
-    setsearchText(tag);
-    const searchResult = filterPosts(tag);
-    setsearchResults(searchResult);
+  const handleTagClick = (tagName) => {
+    setSearchText(tagName);
+
+    const searchResult = filterPrompts(tagName);
+    setSearchedResults(searchResult);
   };
 
   return (
@@ -63,13 +79,17 @@ const Feed = () => {
           className="search_input peer"
         />
       </form>
+
+      {/* All Prompts */}
       {searchText ? (
-        <PromptCardList data={searchResults} handleTagClick={handleTagClick} />
+        <PromptCardList
+          data={searchedResults}
+          handleTagClick={handleTagClick}
+        />
       ) : (
-        <PromptCardList data={posts} handleTagClick={handleTagClick} />
+        <PromptCardList data={allPosts} handleTagClick={handleTagClick} />
       )}
     </section>
   );
 };
-
 export default Feed;
