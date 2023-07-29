@@ -10,8 +10,6 @@ export const POST = async (req) => {
       tag,
     });
     await newPrompt.save();
-    const prompts = await Prompt.find({}).populate("creator");
-    console.log(prompts);
     return new Response(JSON.stringify(newPrompt), {
       status: 201,
     });
